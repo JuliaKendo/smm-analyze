@@ -40,7 +40,7 @@ def get_post_commentators(params, restrict_date):
         yield [comments['from_id'] for comments in dict_data['response']['items'] if comments['date'] > restrict_date]
 
 
-def get_vk_likers(params):
+def get_post_likers(params):
     step = 100
     total_likers = step
     url = 'https://api.vk.com/method/likes.getList'
@@ -66,14 +66,11 @@ def fetch_vk_commentators_rating(vk_token, number_posts):
     vk_posts = list(itertools.chain(*fetch_vk_posts(params, number_posts)))
     restrict_date = get_restriction_date(weeks=2)
     for post in tqdm(vk_posts, desc="Обработанно", unit=" постов VK"):
-        try:
-            post_id, owner_id = post
-            params = get_vk_api_parametrs(vk_token, owner_id=owner_id, post_id=post_id)
-            commentators = set(itertools.chain(*get_post_commentators(params, restrict_date)))
-            params = get_vk_api_parametrs(vk_token, owner_id=owner_id, item_id=post_id)
-            likers = set(itertools.chain(*get_vk_likers(params)))
-            top_vk_commentators = top_vk_commentators.union(commentators.intersection(likers))
-        except (KeyError, TypeError, ValueError):
-            continue
+        post_id, owner_id = post
+        params = get_vk_api_parametrs(vk_token, owner_id=owner_id, post_id=post_id)
+        commentators = set(itertools.chain(*get_post_commentators(params, restrict_date)))
+        params = get_vk_api_parametrs(vk_token, owner_id=owner_id, item_id=post_id)
+        likers = set(itertools.chain(*get_post_likers(params)))
+        top_vk_commentators = top_vk_commentators.union(commentators.intersection(likers))
 
     return top_vk_commentators
