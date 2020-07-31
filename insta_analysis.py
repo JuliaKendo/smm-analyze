@@ -1,15 +1,8 @@
-import datetime
-import dateutil.relativedelta
+from tqdm import tqdm
 from instabot import Bot
 from collections import Counter
 from collections import defaultdict
-
-
-def get_restriction_date():
-    current_time = datetime.datetime.today()
-    current_date = current_time.combine(current_time.date(), current_time.min.time())
-    restrict_date = current_date - dateutil.relativedelta.relativedelta(months=3)
-    return restrict_date.timestamp()
+from amplifer_lib import get_restriction_date
 
 
 def fetch_insta_commentators_rating(login, password, account):
@@ -18,8 +11,8 @@ def fetch_insta_commentators_rating(login, password, account):
     total_medias = bot.get_total_user_medias(account)
     commenters = []
     commenters_by_posts = defaultdict(set)
-    restrict_date = get_restriction_date()
-    for media_id in total_medias:
+    restrict_date = get_restriction_date(months=3)
+    for media_id in tqdm(total_medias, desc="Обработанно", unit=" постов instagram"):
         media_comments = bot.get_media_comments_all(media_id)
         for comment in media_comments:
             if comment['created_at'] <= restrict_date:
