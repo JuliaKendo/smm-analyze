@@ -17,20 +17,9 @@ def get_restriction_date(**kwargs):
     return restrict_date.timestamp()
 
 
-def get_vk_api_parametrs(vk_token, **kwargs):
+def get_api_parametrs(vk_token, **kwargs):
     params = {
-        'access_token': vk_token,
-        'v': '5.120'
-    }
-    for key in kwargs.keys():
-        params[key] = kwargs[key]
-
-    return params
-
-
-def get_fb_api_parametrs(fb_token, **kwargs):
-    params = {
-        'access_token': fb_token,
+        'access_token': vk_token
     }
     for key in kwargs.keys():
         params[key] = kwargs[key]
