@@ -11,7 +11,6 @@ def fetch_vk_posts(params, total_posts=0):
     for offset in itertools.count(0, step):
         if offset > total_posts:
             break
-        params['domain'] = 'cocacola'
         params['offset'] = offset
         params['count'] = min(step, total_posts - offset) if total_posts > 0 else step
         response = requests.get(url, params=params)
@@ -60,9 +59,9 @@ def get_post_likers(params):
         yield [likers for likers in dict_data['response']['items']]
 
 
-def fetch_vk_commentators_rating(vk_token, number_posts):
+def fetch_vk_commentators_rating(vk_token, vk_account, number_posts):
     top_vk_commentators = set()
-    params = get_vk_api_parametrs(vk_token)
+    params = get_vk_api_parametrs(vk_token, domain=vk_account)
     vk_posts = itertools.chain(*fetch_vk_posts(params, number_posts))
     restrict_date = get_restriction_date(weeks=2)
     for post in tqdm(vk_posts, desc="Обработанно", unit=" постов VK"):

@@ -29,7 +29,7 @@ def create_parser():
     parser.add_argument('-i', '--instagram', action='store_true', help='Выдача для Instagram')
     parser.add_argument('-v', '--vk', action='store_true', help='Выдача для VK')
     parser.add_argument('-f', '--facebook', action='store_true', help='Выдача для facebook')
-    parser.add_argument('-p', '--posts', default=1, help='Количество анализируемых постов', type=int)
+    parser.add_argument('-p', '--posts', default=0, help='Количество анализируемых постов', type=int)
     parser.add_argument('-l', '--log', help='Путь к каталогу с log файлом')
 
     return parser
@@ -48,7 +48,7 @@ def main():
             top_insta_commenters, top_insta_commenters_by_posts = fetch_insta_commentators_rating(
                 os.getenv('INSTA_LOGIN'),
                 os.getenv('INSTA_PASSWORD'),
-                'cocacolarus',
+                os.getenv('INSTA_ACCOUNT'),
                 args.posts
             )
 
@@ -63,6 +63,7 @@ def main():
         try:
             top_vk_commenters = fetch_vk_commentators_rating(
                 os.getenv('VK_ACCESS_TOKEN'),
+                os.getenv('VK_ACCOUNT'),
                 args.posts
             )
 
