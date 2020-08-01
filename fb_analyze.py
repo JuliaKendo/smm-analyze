@@ -1,9 +1,21 @@
 import requests
 import itertools
-from amplifer_lib import get_fb_api_parametrs, get_restriction_date, get_reactions_rating
-from amplifer_lib import convert_to_timestamp, get_user_id
-from collections import defaultdict
 from tqdm import tqdm
+from collections import Counter
+from collections import defaultdict
+from smm_lib import get_fb_api_parametrs, get_restriction_date, convert_to_timestamp
+
+
+def get_user_id(comments):
+    if 'from' in comments.keys():
+        return comments['from']['id']
+    elif 'id' in comments.keys():
+        return comments['id']
+
+
+def get_reactions_rating(reactions):
+    list_reactions = Counter(reactions).most_common()
+    return {reaction[0]: reaction[1] for reaction in list_reactions}
 
 
 def fetch_fb_posts(params, group_id, total_posts=0):

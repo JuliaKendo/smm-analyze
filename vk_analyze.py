@@ -2,7 +2,7 @@ import time
 import itertools
 import requests
 from tqdm import tqdm
-from amplifer_lib import get_vk_api_parametrs, get_restriction_date
+from smm_lib import get_vk_api_parametrs, get_restriction_date
 
 
 def fetch_vk_posts(params, total_posts=0):
