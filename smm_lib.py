@@ -17,7 +17,7 @@ def get_restriction_date(**kwargs):
     return restrict_date.timestamp()
 
 
-def get_api_parametrs(vk_token, **kwargs):
+def get_api_parameters(vk_token, **kwargs):
     params = {
         'access_token': vk_token
     }

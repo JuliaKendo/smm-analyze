@@ -42,8 +42,9 @@ def main():
     args = parser.parse_args()
 
     initialize_logger(args.log)
+    all_media = not args.instagram and not args.vk and not args.facebook
 
-    if args.instagram or (not args.instagram and not args.vk and not args.facebook):
+    if args.instagram or all_media:
         try:
             top_insta_commenters, top_insta_commenters_by_posts = fetch_insta_commentators_rating(
                 os.getenv('INSTA_LOGIN'),
@@ -59,7 +60,7 @@ def main():
             pprint.pprint(f'Comments Top: {top_insta_commenters}')
             pprint.pprint(f'Posts Top: {top_insta_commenters_by_posts}')
 
-    if args.vk or (not args.instagram and not args.vk and not args.facebook):
+    if args.vk or all_media:
         try:
             top_vk_commenters = fetch_vk_commentators_rating(
                 os.getenv('VK_ACCESS_TOKEN'),
@@ -73,7 +74,7 @@ def main():
         else:
             pprint.pprint(top_vk_commenters)
 
-    if args.facebook or (not args.instagram and not args.vk and not args.facebook):
+    if args.facebook or all_media:
         try:
             top_fb_commenters = fetch_fb_commentators_rating(
                 os.getenv('FB_ACCESS_TOKEN'),

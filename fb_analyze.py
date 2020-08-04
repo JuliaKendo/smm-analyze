@@ -1,21 +1,13 @@
 import requests
-import itertools
 from tqdm import tqdm
 from collections import Counter
 from collections import defaultdict
-from smm_lib import get_api_parametrs, get_restriction_date, convert_to_timestamp
+from smm_lib import get_api_parameters, get_restriction_date, convert_to_timestamp
 
 
-def get_user_id(comments):
-    if 'from' in comments.keys():
-        return comments['from']['id']
-    elif 'id' in comments.keys():
-        return comments['id']
-
-
-def get_reactions_rating(reactions):
-    list_reactions = Counter(reactions).most_common()
-    return {reaction[0]: reaction[1] for reaction in list_reactions}
+def get_common_reactions(reactions):
+    common_reactions = Counter(reactions).most_common()
+    return dict(common_reactions)
 
 
 def fetch_fb_posts(params, group_id, total_posts=0):
@@ -23,8 +15,8 @@ def fetch_fb_posts(params, group_id, total_posts=0):
     params['fields'] = 'feed%s%s' % ('' if total_posts == 0 else f'.limit({total_posts})', '{id}')
     response = requests.get(url, params=params)
     response.raise_for_status()
-    dict_data = response.json()
-    yield [post['id'] for post in dict_data['feed']['data'] if dict_data['feed']['data']]
+    fb_posts = response.json()
+    yield from [post['id'] for post in fb_posts['feed']['data'] if fb_posts['feed']['data']]
 
 
 def get_post_commentators(params, post_id, restriction_date):
@@ -32,8 +24,8 @@ def get_post_commentators(params, post_id, restriction_date):
     url = 'https://graph.facebook.com/v7.0/%s/comments' % post_id
     response = requests.get(url, params=params)
     response.raise_for_status()
-    dict_data = response.json()
-    yield [get_user_id(comments) for comments in dict_data['data'] if convert_to_timestamp(comments['created_time']) > restriction_date]
+    post_comments = response.json()
+    yield from [comment['from']['id'] for comment in post_comments['data'] if convert_to_timestamp(comment['created_time']) > restriction_date and 'from' in comment.keys()]
 
 
 def get_post_reactions(params, post_id):
@@ -41,22 +33,21 @@ def get_post_reactions(params, post_id):
     url = 'https://graph.facebook.com/v7.0/%s/reactions' % post_id
     response = requests.get(url, params=params)
     response.raise_for_status()
-    dict_data = response.json()
-    yield {reaction['id']: reaction['type'] for reaction in dict_data['data']}
+    post_reactions = response.json()
+    yield from [post_reaction for post_reaction in post_reactions['data']]
 
 
 def fetch_fb_commentators_rating(fb_token, fb_group, number_posts):
-    fb_commenters = set()
-    reactions = defaultdict(list)
+    fb_commentators = set()
+    fb_reactions = defaultdict(list)
     restriction_date = get_restriction_date(months=3)
-    params = get_api_parametrs(fb_token)
-    fb_posts = itertools.chain(*fetch_fb_posts(params, fb_group, number_posts))
+    params = get_api_parameters(fb_token)
+    fb_posts = fetch_fb_posts(params, fb_group, number_posts)
     for post in tqdm(fb_posts, desc="Обработанно", unit=" постов FB"):
-        params = get_api_parametrs(fb_token)
-        commentators_id = set(itertools.chain(*get_post_commentators(params, post, restriction_date)))
-        fb_commenters = fb_commenters.union(commentators_id)
-        for post_reactions in get_post_reactions(params, post):
-            for user_id, reaction in post_reactions.items():
-                reactions[user_id].append(reaction)
+        params = get_api_parameters(fb_token)
+        for post_commentator in get_post_commentators(params, post, restriction_date):
+            fb_commentators.add(post_commentator)
+        for post_reaction in get_post_reactions(params, post):
+            fb_reactions[post_reaction['id']].append(post_reaction['type'])
 
-    return {user_id: get_reactions_rating(reactions) for user_id, reactions in reactions.items() if user_id in fb_commenters}
+    return {commentator_id: get_common_reactions(reactions) for commentator_id, reactions in fb_reactions.items() if commentator_id in fb_commentators}
