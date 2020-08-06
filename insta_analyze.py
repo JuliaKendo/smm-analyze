@@ -5,15 +5,15 @@ from collections import defaultdict
 from smm_lib import get_restriction_date
 
 
-def fetch_insta_commentators_rating(login, password, account, number_posts=0):
+def fetch_insta_commentators_rating(login, password, account, posts_number=0):
     bot = Bot()
     commenters = []
     commenters_by_posts = defaultdict(set)
     bot.login(username=login, password=password)
     restriction_date = get_restriction_date(months=3)
     total_medias = bot.get_total_user_medias(account)
-    max_medias = len(total_medias) if number_posts == 0 else number_posts
-    for media_id in tqdm(total_medias[:max_medias], desc="Обработанно", unit=" постов instagram"):
+    max_medias = len(total_medias) if posts_number == 0 else posts_number
+    for media_id in tqdm(total_medias[:max_medias], desc="Обработано", unit=" постов instagram"):
         media_comments = bot.get_media_comments_all(media_id)
         for comment in media_comments:
             if comment['created_at'] <= restriction_date:
